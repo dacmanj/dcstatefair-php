@@ -1,0 +1,676 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+<title>DC State Fair - Donation Form</title>
+<style>
+#header {
+	background-color: #000;
+	border-top: 4px solid black;
+	border-bottom: 4px solid black;
+	margin-bottom: 20px;
+}
+
+#maindiv {
+	background-color: #f1f1f1;
+}
+</style>
+<link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.min.css" />
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+
+var selected;
+var totalEntries = 1;
+var tshirtQty = 0;
+var touched = 0;
+
+function getParameterByName(name) {
+    var match = RegExp('[?&]' + name + '=([^&]*)')
+                    .exec(window.location.search);
+    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+}
+
+function formSetup() {
+selected = "";
+selected = $("#payment_for option:selected").attr("id").toLowerCase();
+if ($('#membership:selected').val()) {selected = "membership";}
+if ($('#contestentry:selected').val()) {selected = "contestentry";}
+if ($('#corporatesponsorship:selected').val()) {selected = "corporate";}
+
+$("input[name=cmd]").val("_donations");
+
+$("#amount").removeAttr("readonly"); 
+
+	switch(selected) {
+	case 'membership': 
+		$("#amount").val('20.00').removeAttr("readonly"); 
+		$(".google").show();
+		$(".org").hide();
+		$(".contest").hide();
+		$(".tshirt").hide();
+		
+	
+	break;
+	case 'contestentry':
+		$("#amount").attr("readonly","readonly"); 
+		amountFromNumberOfEntries();
+		$(".google").hide();
+		$(".contest").show();
+		$(".org").hide();
+		$(".tshirt").hide();
+
+		$("input[name=cmd]").val("_cart")
+		$("input[name=upload]").val(1)
+			
+	break;
+	case 'donation':
+		$(".org").hide();
+		$(".google").hide();
+		$(".contest").hide();
+		$("input[name=upload]").val("");
+		$(".tshirt").hide();
+		
+	break;
+	case 'exhibitionfees':
+	case 'corporate':
+		$(".org").show();
+		$(".google").hide();
+		$(".contest").hide();
+		$("input[name=upload]").val("")
+		$(".tshirt").hide();	
+	break;
+	case 't-shirt':
+		$(".contest").hide();
+		$(".org").hide();
+		$(".google").hide();
+		$("#first_name").show();
+		$(".tshirt").show();
+		amountFromNumberOfShirts();
+		$("input[name=cmd]").val("_cart")
+		$("input[name=upload]").val(1)
+		
+	default: 
+
+	}
+
+}
+
+function touch() {
+	touched = 1;
+}
+
+function amountFromNumberOfEntries() {
+	var totalEntries=0;
+	$("select[name=numberofentries]").each(function() { totalEntries += parseInt($(this).val()); });
+	var amount = totalEntries * 5;
+	
+	$("#amount").val(amount + ".00");
+}
+
+function amountFromNumberOfShirts() {
+	var totalShirts=0;
+	$("select[name=tshirtqty]").each(function() { totalShirts += parseInt($(this).val()); });
+	var amount = totalShirts * 15;
+	$("#amount").val(amount + ".00");
+}
+
+function addItemToCart(index, name, qty, amount) {
+	var $hiddenInputItem = $('<input/>',{type:'hidden',name:'item_name_'+(parseInt(index)),value:name});
+	var $hiddenInputQuantity = $('<input/>',{type:'hidden',name:'quantity_'+(parseInt(index)),value:qty});
+	var $hiddenInputAmount = $('<input/>',{type:'hidden',name:'amount_'+(parseInt(index)),value:amount});
+	$hiddenInputItem.appendTo("#paypal");
+	$hiddenInputQuantity.appendTo("#paypal");
+	$hiddenInputAmount.appendTo("#paypal");
+}
+
+function buildShirtCart() {
+		var small = 0;
+		var medium = 0;
+		var large = 0;
+		var xlarge = 0;
+		
+		$("select[name=tshirtqty] option:selected").each(function() {
+			var size = $(this).closest("fieldset").find("#tshirtsize").val();
+			switch(size)
+			{
+				case 'Small':
+				small += parseInt($(this).val());
+				break;
+				case 'Medium':
+				medium += parseInt($(this).val());
+				break;
+				case 'Large':
+				large += parseInt($(this).val());
+				break;
+				case 'X-Large':
+				xlarge += parseInt($(this).val());
+				break;
+			}
+			
+			
+		});
+		name = $("#payment_for option:selected").val();
+		price = 15;
+		var index = 1;
+		if (small > 0) {
+			addItemToCart(index++, name + " (Small)", small, price);
+			$(".g_tshirtsmall").val(small);
+		}
+		if (medium > 0) {
+			addItemToCart(index++, name + " (Medium)", medium, price);
+			$(".g_tshirtmedium").val(medium);
+		}
+		if (large > 0) {
+			addItemToCart(index++, name + " (Large)", large, price);
+			$(".g_tshirtlarge").val(large);
+			
+		}
+		if (xlarge > 0) {
+			addItemToCart(index++, name + " (X-Large)", xlarge, price);
+			$(".g_tshirtxlarge").val(xlarge);
+			
+		}
+	var tshirtQty = small + medium + large + xlarge;
+	if (tshirtQty == 0)
+	{ 
+		alert("Must choose a size!")
+		return false;
+	}
+	
+}
+
+function submitForms(e) {	
+    e.preventDefault();
+	if (selected == "t-shirt") { 
+		if (buildShirtCart() == false)
+		{ return false; }
+		
+	}
+	$("#" + selected + " input[type=submit]").click();	
+	$("#" + selected + " input[type=submit]").val() ? false : submitPaypal();
+		
+}
+
+function submitPaypal(e) {
+	if (touched < 1 && ($("#invoice_number").val() == null || $("#invoice_number").val().length == 0)) { return false; }
+	updateHiddenFields();
+	if (selected == "contestentry") buildCart();
+	$("#paypal").get(0).submit();	
+}
+
+function buildCart() {
+	$("fieldset.contest").each(function(index) {
+		var $hiddenInputItem = $('<input/>',{type:'hidden',name:'item_name_'+(parseInt(index)+1),value:$(this).find("select#contest option:selected").val() + ' Contest Entry'});
+		var $hiddenInputQuantity = $('<input/>',{type:'hidden',name:'quantity_'+(parseInt(index)+1),value:$(this).find("select#numberofentries option:selected").val()});
+		var $hiddenInputAmount = $('<input/>',{type:'hidden',name:'amount_'+(parseInt(index)+1),value:5});
+		$hiddenInputItem.appendTo("#paypal");
+		$hiddenInputQuantity.appendTo("#paypal");
+		$hiddenInputAmount.appendTo("#paypal");
+	});
+	
+}
+
+function updateHiddenFields() {
+	$(".g_first_name").val($("#first_name").val());
+	$(".g_last_name").val($("#last_name").val());
+	$(".g_address").val($("#address1").val());
+	$(".g_city").val($("#city").val());
+	$(".g_state").val($("#state").val());
+	$(".g_zip").val($("#zip").val());
+	$(".g_amount").val($("#amount").val());
+	$(".g_email").val($("#email").val());
+	$(".g_phone").val($("#phone").val());
+	$(".g_organization").val($("#organization").val());
+	
+	$(".g_payment_type").val($("select[name=item_name] option:selected").val());
+	$(".g_invoice_number").val($("#invoice_number").val());
+	$(".g_address_full").val($("#address1").val() + "\n" + ($("#city").val() || "") + ", " + ($("#state option:selected").val() || "") + " " +  ($("#zip").val() || ""));
+	$("input[name=item_name]").val(($("#contestentry:selected").val() ? ($("#contest").val()) + " " : "") + $("#payment_for").val())
+	$("select[name*=numberof]").each(function() { totalEntries += parseInt($(this).val()); });	
+	touched = 1;
+}
+
+function dropDownSetLimits() {
+	$("select[name=numberofentries] option").remove();
+
+	$("select[name=numberofentries]").each(function(index) {
+		var limit = $(this).closest("fieldset").find("select[name=contest] option:selected").attr("limit") || 2;
+
+		for (var i=0; i<limit; i++) {
+			var $newOption = $('<option/>',{value:(i+1), html:(i+1)});
+			$(this).append($newOption)
+		}
+
+	});
+
+
+}
+
+function addContestEntry() {
+	var endOfEntries = $("#addanotherentry").parent().parent();
+	var newFieldsetContest = $("fieldset.contest").eq(0).clone().insertBefore(endOfEntries);
+
+	var controlDiv = $("<div/>",{class: "controls"});
+	var trashButton = $("<button/>",{ class: "btn btn-danger", onClick: "deleteContestEntry($(this))", type:"button", html:" Delete"});	
+	trashButton.appendTo(controlDiv);
+	trashButton.prepend( $('<i/>',{ class:"icon-trash"}));
+	controlDiv.appendTo(newFieldsetContest);
+	updateHiddenFields();
+	amountFromNumberOfEntries();
+	$("input, select").change(updateHiddenFields);
+	return false;
+}
+
+function tshirtMouseover(e) {
+	$(this).height(200).find("img").animate({ width: '200', height: '192' }, 1000);		
+}
+
+function tshirtMouseout(e) {
+	$(this).height(100).find("img").animate({ width: '100', height: '96' }, 1000);		
+}
+
+function addAnotherSize() {
+	var endOfEntries = $("#addanothersize").parent().parent();
+	var newFieldsetTshirt = $(".tshirt").eq(0).clone().insertBefore(endOfEntries);
+
+	var controlDiv = $("<div/>",{class: "controls"});
+	var trashButton = $("<button/>",{ class: "btn btn-danger", onClick: "deleteSize($(this))", type:"button", html:" Delete"});	
+	trashButton.appendTo(controlDiv);
+	trashButton.prepend( $('<i/>',{ class:"icon-trash"}));
+	controlDiv.appendTo(newFieldsetTshirt);
+	updateHiddenFields();
+	amountFromNumberOfShirts();
+	$("select[name=tshirtqty]").change(amountFromNumberOfShirts);
+/*	$(".t-shirt-preview").mouseover(tshirtMouseover);
+	$(".t-shirt-preview").mouseout(tshirtMouseout);*/
+	
+	$("input, select").change(updateHiddenFields);
+	return false;
+}
+
+function deleteContestEntry(caller) {
+	$("button.btn-danger").closest("fieldset").remove();
+	amountFromNumberOfEntries();
+	
+}
+
+function deleteSize(caller) {
+	$("button.btn-danger").closest("fieldset").remove();	
+}
+
+$(document).ready(function() {
+	
+	// NEW selector
+	jQuery.expr[':'].Contains = function(a, i, m) {
+	  return jQuery(a).text().toUpperCase()
+	      .indexOf(m[3].toUpperCase()) >= 0;
+	};
+
+	// OVERWRITES old selecor
+	jQuery.expr[':'].contains = function(a, i, m) {
+	  return jQuery(a).text().toUpperCase()
+	      .indexOf(m[3].toUpperCase()) >= 0;
+	};
+	totalEntries = 0;
+/*	$(".t-shirt-preview").mouseover(tshirtMouseover);
+	$(".t-shirt-preview").mouseout(tshirtMouseout);*/
+	
+	var filename = window.location.href.substr(window.location.href.lastIndexOf("/")+1);
+	var type = getParameterByName("type") || filename;
+	switch(type) {
+	case 'exhibitor':
+	   $("#exhibitionfees").attr("selected","true");
+	break;
+	case 'corp':
+	   $("#corporatesponsorship").attr("selected","true");
+	break;	
+	case 'membership':
+	   $("#membership").attr("selected","true");
+	break;	
+	case 'contestentry':
+	case 'entryfee':
+	   $("#contestentry").attr("selected","true");
+	
+	break;
+	case 't-shirt':
+		$("#t-shirt").attr("selected","true");
+		amountFromNumberOfShirts();
+	default:
+	   $("#contest option:contains(" + getParameterByName('contest') + ")").attr("selected","true");
+	}
+	$("input#invoice_number").val(getParameterByName("invnum"));
+	$("input#amount").val(getParameterByName("amount"));
+	$("input#organization").val(getParameterByName("org"));
+	$("input#invnum").val(getParameterByName("invnum"));
+
+	$("input, select").change(updateHiddenFields);
+	$("#payment_for").change(formSetup);
+	$("#paypal").submit(submitForms);
+	$("#hidden_iframe").load(submitPaypal);
+	$("select[name=numberofentries]").change(amountFromNumberOfEntries);
+	$("select[name=tshirtqty]").change(amountFromNumberOfShirts);
+	$("#addanotherentry").click(addContestEntry);
+	$("#addanothersize").click(addAnotherSize);
+	formSetup();
+	
+
+});
+</script>
+
+</head>
+
+<body>
+<div id="maindiv" class="container-fluid">
+	
+
+<div class="row-fluid">
+	<div class="offset2 span8">
+		<div id="header"><img src="http://dcstatefair.files.wordpress.com/2012/07/dc-state-fair-header_no-text.jpg" alt="DC State Fair Logo" width="940"/></div>
+	</div>
+</div>
+
+
+<div class="row-fluid">
+<div class="offset2 span8 well">
+	<h1>DC State Fair Donation Form</h1>	
+
+	<form class="form-horizontal" action="https://www.paypal.com/cgi-bin/webscr" method="post" id="paypal">
+	<fieldset>
+	 <legend>DC State Fair is a <a href="http://www.guidestar.org/organizations/27-3804087/dc-state-fair.aspx" target="_BLANK">501(c)(3) nonprofit charitable organization</a>.</legend>
+<!--	<div class="alert">ALERT: T-Shirt pre-sales have closed - get yours at the Fair today!</div>-->
+	 <!-- Identify your business so that you can collect the payments. -->  
+	 <input type="hidden" name="business" value="dcstatefair@gmail.com">  
+	 <!-- Specify a Donate button. -->  
+	 <input type="hidden" name="cmd" value=""> 
+	 <input type="hidden" name="upload" value=""> 
+  
+	 <input type="hidden" name="currency_code" value="USD">
+	 <input type="hidden" name="item_name">
+
+
+	 <!-- Specify details about the contribution -->
+		<div class="control-group">
+			<label class="control-label" for="payment_for">Payment for: </label>
+			<div class="controls">
+			 <select name="payment_for" id="payment_for">
+				 <option value="Limited Edition DC State Fair T-Shirt" id="t-shirt">Limited Edition DC State Fair T-Shirt			
+				 <option value="Corporate Sponsorship" id="corporatesponsorship">Corporate Sponsorship
+				 <option value="Exhibition Fee" id="exhibitionfees">Exhibition Fees
+				 <option value="Membership" id="membership" SELECTED>Membership ($20)
+				 <option value="Contest Entry" id="contestentry">Contest Entry ($5 each)
+				 <option value="Donation">Donation
+			 </select>
+			</div>
+		</div>
+	
+		<fieldset class="contest well">
+		<div class="control-group contest">
+		 <label class="control-label" for="contest">Contest: </label>
+		 	<div class="controls">	
+				<select name="contest" value="" id="contest" onChange="dropDownSetLimits()">
+					<option value="" selected="selected">Select a Contest</option>
+					<optgroup label="Prepared Foods Contests">
+						<option>Cucumber Pickle</option>
+						<option>Vegetable Pickle</option>
+						<option>Fermented Vegetable</option>
+						<option>Fruit Pickle</option>
+						<option>Jams</option>
+					</optgroup>
+					<optgroup label="Craft Contests">
+						<option limit=5>Sewing</option>
+						<option>Knit/Crochet</option>
+					</optgroup>	
+					<optgroup label="Baked Goods Contests">
+						<option>Pie</option>
+						<option>Cupcake</option>
+					</optgroup>
+				</select>			
+			</div>
+		</div>
+	
+		<div class="control-group contest">
+		 <label class="control-label" for="numberofentries">Number of Entries: </label>
+		 <div class="controls">
+			<select name="numberofentries" id="numberofentries">
+				<option>1</option>
+				<option>2</option>
+			</select>		
+			</div>
+		</div>
+		</fieldset>
+	
+		<div class="control-group contest">
+		 	<div class="controls">
+				<button class="btn btn-primary" id="addanotherentry">Add another entry</button>
+			</div>
+		</div>
+<!-- tshirt -->
+
+	<div class="tshirt well">
+			<div class="pull-right t-shirt-preview"><a href="dc%20state%20fair%20t-shirt.jpeg" target="_blank"><img src="dc%20state%20fair%20t-shirt.jpeg" width="100px" border=0 alt="DC State Fair t-shirt preview"></a></div>
+			
+	<fieldset class="tshirt">
+	<div class="control-group tshirt">
+	 <label class="control-label" for="contest">Size: </label>
+	 	<div class="controls">	
+			<select name="tshirtsize" value="" id="tshirtsize" onChange="">
+				<option value="" selected="selected">Select a size</option>
+					<option>Small</option>
+					<option>Medium</option>
+					<option>Large</option>
+					<option>X-Large</option>
+			</select>			
+		</div>
+	</div>
+
+	<div class="control-group tshirt">
+	 <label class="control-label" for="tshirtqty">Qty of T-Shirts</label>
+	 <div class="controls">
+		<select name="tshirtqty" id="tshirtqty">
+			<option>1</option>
+			<option>2</option>
+			<option>3</option>
+			<option>4</option>
+			<option>5</option>
+			
+			
+		</select>		
+		</div>
+	</div>
+	</fieldset>
+	</div>
+
+	<div class="control-group tshirt">
+	 	<div class="controls">
+			<button class="btn btn-primary" id="addanothersize">Add another size</button>
+		</div>
+	</div>
+	<!--end t-shirt-->
+	
+		<div class="control-group">
+		 <label class="control-label" for="amount">Amount: </label>
+		 <div class="controls">$<input type="text" name="amount" value="" id="amount" size="8"></div>
+		</div>
+
+		<div class="control-group tshirt google">
+			<label class="control-label" for="email">Email</label>
+		 	<div class="controls">
+				<input type="text" name="email" value="" id="email">
+			</div>
+		</div>
+	
+		<div class="control-group tshirt google">
+			<label class="control-label" for="first_name">First Name</label>
+
+		 	<div class="controls"><input type="text" name="first_name" value="" id="first_name"></div>
+		</div>
+		<div class="control-group tshirt google">
+			<label class="control-label" for="last_name">Last Name</label>
+
+		 	<div class="controls"><input type="text" name="last_name" value="" id="last_name"></div>
+		</div>
+		<div class="control-group org">
+		 <label class="control-label" for="organization">Organization: </label>
+		 <div class="controls"><input type="text" name="organization" value="" id="organization" size="8"></div>
+		</div>
+		<div class="control-group org">
+		 <label class="control-label" for="invoice_num"> Invoice Number: </label>
+		 <div class="controls"><input type="text" name="invoice" value="" id="invoice_number" size="8"></div>
+		</div>
+		<div class="control-group google">
+			<label class="control-label" for="address1">Street Address</label>
+		 	<div class="controls"><input type="text" name="address1" value="" id="address1"></div>
+		</div>
+		<div class="control-group google">
+			<label class="control-label" for="city">City</label>
+		 	<div class="controls"><input type="text" name="city" value="" id="city"></div>
+		</div>
+		<div class="control-group google">
+			<label class="control-label" for="state">State</label>
+		 	<div class="controls"><select name="state" value="" id="state">
+				<option value="" selected="selected">Select a State</option> 
+				<option value="DC">District Of Columbia</option> 
+				<option value="MD">Maryland</option> 
+				<option value="VA">Virginia</option> 
+				<option value="AL">Alabama</option> 
+				<option value="AK">Alaska</option> 
+				<option value="AZ">Arizona</option> 
+				<option value="AR">Arkansas</option> 
+				<option value="CA">California</option> 
+				<option value="CO">Colorado</option> 
+				<option value="CT">Connecticut</option> 
+				<option value="DE">Delaware</option> 
+				<option value="FL">Florida</option> 
+				<option value="GA">Georgia</option> 
+				<option value="HI">Hawaii</option> 
+				<option value="ID">Idaho</option> 
+				<option value="IL">Illinois</option> 
+				<option value="IN">Indiana</option> 
+				<option value="IA">Iowa</option> 
+				<option value="KS">Kansas</option> 
+				<option value="KY">Kentucky</option> 
+				<option value="LA">Louisiana</option> 
+				<option value="ME">Maine</option> 
+				<option value="MA">Massachusetts</option> 
+				<option value="MI">Michigan</option> 
+				<option value="MN">Minnesota</option> 
+				<option value="MS">Mississippi</option> 
+				<option value="MO">Missouri</option> 
+				<option value="MT">Montana</option> 
+				<option value="NE">Nebraska</option> 
+				<option value="NV">Nevada</option> 
+				<option value="NH">New Hampshire</option> 
+				<option value="NJ">New Jersey</option> 
+				<option value="NM">New Mexico</option> 
+				<option value="NY">New York</option> 
+				<option value="NC">North Carolina</option> 
+				<option value="ND">North Dakota</option> 
+				<option value="OH">Ohio</option> 
+				<option value="OK">Oklahoma</option> 
+				<option value="OR">Oregon</option> 
+				<option value="PA">Pennsylvania</option> 
+				<option value="RI">Rhode Island</option> 
+				<option value="SC">South Carolina</option> 
+				<option value="SD">South Dakota</option> 
+				<option value="TN">Tennessee</option> 
+				<option value="TX">Texas</option> 
+				<option value="UT">Utah</option> 
+				<option value="VT">Vermont</option> 
+				<option value="WA">Washington</option> 
+				<option value="WV">West Virginia</option> 
+				<option value="WI">Wisconsin</option> 
+				<option value="WY">Wyoming</option>
+				</select>
+
+
+			</div>
+		</div>
+		<div class="control-group google">
+			<label class="control-label" for="zip">Zip Code</label>
+		 	<div class="controls"><input type="text" name="zip" value="" id="zip"></div>
+		</div>
+	
+		<div class="control-group tshirt google">
+			<label class="control-label" for="night_phone_a">Phone Number</label>
+		 	<div class="controls"><input type="text" name="night_phone_a" value="" id="phone"></div>
+		</div>
+		<div class="control-group"><div class="controls">
+		 <input type="image" name="submit" border="0" src="https://www.paypal.com/en_US/i/btn/btn_donate_LG.gif" alt="Donate with PayPal" height="25">  
+	 	 <img alt="" border="0" width="1" height="1"  src="https://www.paypal.com/en_US/i/scr/pixel.gif" >  
+		</div></div>
+	</fieldset>
+	</form> 
+</div>
+</div>
+<div class="row-fluid">
+	<div class="offset2 span8 well">
+		<h2>Quid Pro Quo Disclosure</h2>
+		<p>IRS Regulations require us to state that donations are tax deductible only to the extent that they exceed the Fair Market Value of any and all goods and services received.</p>
+		<p>Memberships and general donations are fully tax deductible.</p>
+		<p>Entry Fees, and Exhibitor Fees are not deductible as charitable contributions.</p>
+		<p>Corporate sponsorships may be deductible to the extent that they are in excess of exhibitor fees.</p>
+	</div>
+</div>
+<div class="row-fluid">
+	<div class="offset2 span8 well">
+
+			<address>
+			  <strong>D.C. State Fair, Inc.</strong><br>
+			  3211 13th ST NW BSMT<br>
+			  Washington, D.C. 20010-2409<br>
+			  <abbr title="Phone">P:</abbr> (202) 643-2470<br>
+			  <a href="mailto:info@dcstatefair.org">info@dcstatefair.org</a>
+			</address>
+
+	</div>
+</div>
+
+</div>
+
+<iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
+
+<!--google membership form-->
+<form action="https://docs.google.com/a/thedcstatefair.org/spreadsheet/formResponse?formkey=dExZbDM3cUtNWGI1UEpmS2RLTmhKSHc6MQ&amp;embedded=true&amp;ifq" method="POST" id="membership" target="hidden_iframe" style="display:none;">
+<!--first name--><input type="hidden" name="entry.0.single" value="" class="g_first_name">
+<!--last name--><input type="hidden" name="entry.1.single" value="" class="g_last_name">
+<!--email--><input type="hidden" name="entry.2.single" value="" class="g_email">
+<!--address1--><input type="hidden" name="entry.3.single" value="" class="g_address_full">
+<!--phone--><input type="hidden" name="entry.4.single" value="" class="g_phone">
+<input type="submit" name="submit" value="Submit" style="display:none;">
+</form>
+
+<!--t-shirt form-->
+<form action="https://docs.google.com/a/dcmanjr.com/spreadsheet/formResponse?formkey=dFRCZ2FWQmFJMzRFdkJIX2tET2RkRVE6MQ&ifq" method="POST" id="t-shirt" target="hidden_iframe" style="display:none;">
+<!--first name--><input type="hidden" name="entry.0.single" value="" class="g_first_name">
+<!--last name--><input type="hidden" name="entry.1.single" value="" class="g_last_name">
+<!--email--><input type="hidden" name="entry.2.single" value="" class="g_email">
+<!--phone--><input type="hidden" name="entry.3.single" value="" class="g_phone">
+<!--small--><input type="hidden" name="entry.5.single" value="" class="g_tshirtsmall">
+<!--medium--><input type="hidden" name="entry.6.single" value="" class="g_tshirtmedium">
+<!--large--><input type="hidden" name="entry.9.single" value="" class="g_tshirtlarge">
+<!--xlarge--><input type="hidden" name="entry.7.single" value="" class="g_tshirtxlarge">
+
+
+<input type="submit" name="submit" value="Submit" style="display:none;">
+</form>
+
+<!--google test form-->
+<form action="https://docs.google.com/a/thedcstatefair.org/spreadsheet/formResponse?formkey=dEppc2UwdVBVaVJJNmlJT2FzdWEwWmc6MQ&amp;embedded=true&amp;ifq" method="POST" id="donation" target="hidden_iframe"  style="display:none;">
+<!--first name--><input type="hidden" name="entry.0.single" value="" class="g_first_name">
+<!--last name--><input type="hidden" name="entry.4.single" value="" class="g_last_name">
+<!--address1--><input type="hidden" name="entry.6.single" value="" class="g_address">
+<!--city--><input type="hidden" name="entry.1.single" value="" class="g_city">
+<!--state--><input type="hidden" name="entry.8.single" value="" class="g_state">
+<!--zip--><input type="hidden" name="entry.12.single" value="" class="g_zip">
+<!--amount--><input type="hidden" name="entry.16.single" value="" class="g_amount">
+<!--email--><input type="hidden" name="entry.14.single" value="" class="g_email">
+<!--paymenttype--><input type="hidden" name="entry.17.single" value="" class="g_payment_type">
+<!--number--><input type="hidden" name="entry.19.single" value="" class="g_invoice_number">
+<!--future fields-->
+<!--organization--><input type="hidden" name="entry.a.single" value="" class="g_organization">
+<!--phone--><input type="hidden" name="entry.a.single" value="" id="g_phone">
+<input type="submit" name="submit" value="Submit" style="display:none;">
+</form>
+
+</body>
+</html>
