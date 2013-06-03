@@ -1,0 +1,56 @@
+<html>
+<head>
+<title>DC State Fair - Donation Form</title>
+<style>
+body { font-family: verdana;
+}
+
+h1 {
+font-size: 1em;
+}
+
+p {
+font-size: 0.6em;
+}
+
+</style>
+<script type="text/javascript">
+function defaultAmount() {
+if (document.getElementById('membership').selected) {var selected = "membership";}
+if (document.getElementById('contestentry').selected) {var selected = "contestentry";}
+
+switch(selected) {
+case 'membership': document.getElementById('amount').value='20.00'; break;
+case 'contestentry': document.getElementById('amount').value='5.00'; break;
+default: document.getElementById('amount').value='';
+}
+
+}
+</script>
+
+</head>
+
+<body>
+<img src="images/DC%20State%20Fair%20Header_no%20text.jpg" alt="DC State Fair Logo"/ width="50%">
+<h1>DC State Fair Donation Form</h1>
+
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<table><tr><td valign="middle">
+ <!-- Identify your business so that you can collect the payments. -->  
+ <input type="hidden" name="business" value="dcstatefair@gmail.com">  
+ <!-- Specify a Donate button. -->  
+ <input type="hidden" name="cmd" value="_donations">  
+ <!-- Specify details about the contribution -->
+ <select name="item_name" onchange="defaultAmount();">
+ <option value="Membership" SELECTED id="membership">Membership ($20)
+ <option value="Contest Entry" id="contestentry">Contest Entry ($5 each)
+ <option value="Donation">Donation
+ </select></td><td>
+ $<input type="text" name="amount" value="20.00" id="amount" size="8">  </td><td>
+ <input type="hidden" name="currency_code" value="USD">  
+ <input type="image" name="submit" border="0" src="https://www.paypal.com/en_US/i/btn/btn_donate_LG.gif" alt="PayPal - The safer, easier way to pay online" height="25px">  
+ <img alt="" border="0" width="1" height="1"  src="https://www.paypal.com/en_US/i/scr/pixel.gif" >  
+</td></tr></table>
+</form> 
+</body>
+</html>
