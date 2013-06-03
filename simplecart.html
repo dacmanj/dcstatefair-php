@@ -1,0 +1,209 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+	<title>DC State Fair - Donation Form</title>
+
+	<link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.min.css" />
+	<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+	<script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="simplecart/simplecart.css" />
+	<style>
+	#header {
+		background-color: #000;
+		border-top: 4px solid black;
+		border-bottom: 4px solid black;
+		margin-bottom: 20px;
+	}
+
+	#maindiv {
+		background-color: #f1f1f1;
+	}
+		.cartHeaders,.totalRow{display:none;}
+
+		.simpleCart_items{
+			width: 272px;
+			overflow-y:auto;
+			overflow-x:hidden;
+			margin-bottom:20px;
+		}
+		.itemContainer{
+		    display:  inline-block;
+			padding:11px 0;
+			font-size:11px;
+		}
+		.itemImage{
+			float:left;
+			width:60px;
+		}
+		.item-name{
+			float:left;
+			width:85px;
+		}
+		.item-price{
+			float:left;
+			width:60px;
+		}
+		.item-decrement, .item-increment {
+			float: left;
+			width: 5px;
+		}
+
+		.item-increment {
+			margin-right: 5px;
+		}
+		.item-quantity{
+			float:left;
+			width:30px;
+			margin-top:0px auto;
+			text-align: center;
+			vertical-align:middle;
+		}
+
+		.item-remove {
+			display: none;
+		}
+
+		.itemRow .item-quantity {
+			width: 15px;
+		}
+
+		.itemRow {
+			display: inline-block;
+		}
+		
+		.item-total{
+			float:left;
+		}
+		h2 {
+			color: black;
+		}
+
+		input.item_Quantity {
+			width: 50px;
+		}
+		input.item_price {
+			width: 100px;
+		}
+
+	</style>
+	<script src="simplecart/simpleCart.js"></script>
+	<script>
+		simpleCart({
+			checkout: { 
+				type: "PayPal" , 
+				email: "dcstatefair@gmail.com" 
+			}
+		});	
+	</script>
+
+</head>
+
+<body>
+<div id="maindiv" class="container-fluid">
+	
+
+<div class="row-fluid">
+	<div class="offset2 span8">
+		<div id="header"><img src="http://dcstatefair.files.wordpress.com/2012/07/dc-state-fair-header_no-text.jpg" alt="DC State Fair Logo" width="940"/></div>
+	</div>
+</div>
+
+
+<div class="row-fluid">
+<div class="offset2 span6 well">
+	<h1>DC State Fair Donation Form</h1>	
+	<legend>DC State Fair is a <a href="http://www.guidestar.org/organizations/27-3804087/dc-state-fair.aspx" target="_BLANK">501(c)(3) nonprofit charitable organization</a>.</legend>
+	<div class="simpleCart_shelfItem">
+	    <h2 class="item_name">Donation</h2>
+	    <input type="text" value="1" class="item_Quantity">
+	    <input type="text" class="item_price" value="20.00"></input>
+		<a class="item_add" href="javascript:;"> Add to Cart </a>
+	</div>
+	<div class="simpleCart_shelfItem">
+	    <h2 class="item_name">Corporate Sponsorship</h2>
+	    <input type="text" value="1" class="item_Quantity">
+	    <input type="text" class="item_price" value="250.00"></input>
+		<a class="item_add" href="javascript:;"> Add to Cart </a>
+	</div>
+	<div class="simpleCart_shelfItem">
+	    <h2 class="item_name">Exhibition Fees</h2>
+	 	<select class="item_Contests">
+				<option value="" selected="selected">Select a Contest</option>
+				<optgroup label="Prepared Foods Contests">
+					<option>Vegetable Pickle</option>
+					<option>Fermented Vegetable</option>
+					<option>Fruit Pickle</option>
+					<option>Jams</option>
+				</optgroup>
+				<optgroup label="Craft Contests">
+					<option limit=5>Sewing</option>
+					<option>Knit/Crochet</option>
+				</optgroup>	
+				<optgroup label="Baked Goods Contests">
+					<option>Pie</option>
+					<option>Cupcake</option>
+				</optgroup>
+	    </select>
+	    <input type="text" value="1" class="item_Quantity">
+	    <span class="item_price">$5</span>
+		<a class="item_add" href="javascript:;"> Add to Cart </a>
+	</div>
+	
+
+<!-- tshirt -->
+
+	<div class="simpleCart_shelfItem">
+	    <img src="dc%20state%20fair%20t-shirt.jpeg" class="item_thumb" width="100" alt="DC State Fair t-shirt preview"/>
+	    <h2 class="item_name">DC State Fair T-Shirt</h2>
+	 	<select class="item_size">
+			<option value="" selected="selected">Select a size</option>
+			<option>Small</option>
+			<option>Medium</option>
+			<option>Large</option>
+			<option>X-Large</option>
+	    </select>
+	    <input type="text" value="1" class="item_Quantity">
+	    <span class="item_price">$20</span>
+		<a class="item_add" href="javascript:;"> Add to Cart </a>
+	</div>
+</div>
+	<div class="span3 well">
+				<h2 style="display:inline">Your Cart</h2>
+				<div class="simpleCart_items" >
+				</div>
+			
+			
+			<!--Here's the Links to Checkout and Empty Cart
+			<a href="#" class="simpleCart_empty">empty cart</a>-->
+			<a href="#" class="simpleCart_checkout"><img src="btn_donate_LG.gif" alt="Donate" border=0/></a></div>
+	</div>
+
+<div class="row-fluid">
+	<div class="offset2 span8 well">
+		<h2>Quid Pro Quo Disclosure</h2>
+		<p>IRS Regulations require us to state that donations are tax deductible only to the extent that they exceed the Fair Market Value of any and all goods and services received.</p>
+		<p>Donations are fully tax deductible.</p>
+		<p>Entry Fees, and Exhibitor Fees are not deductible as charitable contributions.</p>
+		<p>Corporate sponsorships may be deductible to the extent that they are in excess of exhibitor fees.</p>
+	</div>
+</div>
+<div class="row-fluid">
+	<div class="offset2 span8 well">
+
+			<address>
+			  <strong>D.C. State Fair, Inc.</strong><br>
+			  3211 13th ST NW BSMT<br>
+			  Washington, D.C. 20010-2409<br>
+			  <abbr title="Phone">P:</abbr> (202) 643-2470<br>
+			  <a href="mailto:info@dcstatefair.org">info@dcstatefair.org</a>
+			</address>
+
+	</div>
+</div>
+
+</div>
+
+
+
+</body>
+</html>
